@@ -57,13 +57,56 @@ namespace EncryptionLibrary
         }
 
         public PrivateKey GetPrivateKey() => privateKey;
-        public void SetPrivateKey(PrivateKey privKey) => privateKey = privKey;
-
+        public void SetPrivateKey(PrivateKey privateKey) => this.privateKey = privateKey;
 
         public PublicKey GetPublicKey() => publicKey;
-        public void SetPublicKey(PublicKey pubKey) => publicKey = pubKey;
+        public void SetPublicKey(PublicKey publicKey) => this.publicKey = publicKey;
 
-        static bool IsPrime(int n)
+
+
+        public void GenerateKeys(int salt = 100)
+        {
+            int p = MathForEncryption.NextPrime(salt);
+            int q = MathForEncryption.NextPrime(p);
+            BigInteger n = p * q;
+            BigInteger phi = (p - 1) * (q - 1);
+            BigInteger e = MathForEncryption.NextPrime(q);
+
+            if (MathForEncryption.GCD((int)e, (int)phi) != 1)
+                e = 3;
+
+            BigInteger d = MathForEncryption.ModInverse(e, phi);
+
+            privateKey = new PrivateKey(d, n);
+            publicKey = new PublicKey(e, n);
+        }
+
+        public List<BigInteger> EncryptString(string message)
+        {
+            var encrypted = new List<BigInteger>();
+            foreach (char ch in message)
+            {
+                BigInteger m = ch;
+                encrypted.Add(BigInteger.ModPow(m, publicKey.e, publicKey.n));
+            }
+            return encrypted;
+        }
+
+        public string DecryptString(List<BigInteger> encrypted)
+        {
+            var result = new StringBuilder();
+            foreach (var c in encrypted)
+            {
+                BigInteger m = BigInteger.ModPow(c, privateKey.d, privateKey.n);
+                result.Append((char)(int)m);
+            }
+            return result.ToString();
+        }
+    }
+
+    public static class MathForEncryption
+    {
+        public static bool IsPrime(int n)
         {
             if (n <= 1) return false;
             if (n <= 3) return true;
@@ -78,7 +121,7 @@ namespace EncryptionLibrary
             return true;
         }
 
-        static int NextPrime(int start)
+        public static int NextPrime(int start)
         {
             int candidate = start + 1;
             while (true)
@@ -89,7 +132,7 @@ namespace EncryptionLibrary
             }
         }
 
-        static int GCD(int a, int b)
+        public static int GCD(int a, int b)
         {
             while (b != 0)
             {
@@ -121,50 +164,6 @@ namespace EncryptionLibrary
             }
 
             return x1 < 0 ? x1 + m0 : x1;
-        }
-
-        public void GenerateKeys(int salt = 100)
-        {
-            // Генерация ключей
-            int p = NextPrime(salt);
-            int q = NextPrime(p);
-            BigInteger n = p * q;
-            BigInteger phi = (p - 1) * (q - 1);
-            BigInteger e = 65537;
-            Console.WriteLine($"phi = {phi}");
-
-            if (GCD((int)e, (int)phi) != 1)
-                e = 3;
-
-            BigInteger d = ModInverse(e, phi);
-
-            Console.WriteLine($"Открытый ключ: (e = {e}, n = {n})");
-            Console.WriteLine($"Закрытый ключ: (d = {d}, n = {n})");
-
-            privateKey = new PrivateKey(d, n);
-            publicKey = new PublicKey(e, n);
-        }
-
-        public List<BigInteger> EncryptString(string message)
-        {
-            var encrypted = new List<BigInteger>();
-            foreach (char ch in message)
-            {
-                BigInteger m = ch;
-                encrypted.Add(BigInteger.ModPow(m, publicKey.e, publicKey.n));
-            }
-            return encrypted;
-        }
-
-        public string DecryptString(List<BigInteger> encrypted)
-        {
-            var result = new StringBuilder();
-            foreach (var c in encrypted)
-            {
-                BigInteger m = BigInteger.ModPow(c, privateKey.d, privateKey.n);
-                result.Append((char)(int)m);
-            }
-            return result.ToString();
         }
     }
 }

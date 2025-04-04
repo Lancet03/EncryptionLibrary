@@ -1,8 +1,13 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using EncryptionLibrary;
+using static EncryptionLibrary.RSA;
 
-EncryptionLibrary.RSA rsa = new EncryptionLibrary.RSA();
-rsa.GenerateKeys();
+RSA rsa = new EncryptionLibrary.RSA();
+var publicKey = rsa.GetPublicKey();
+var privateKey = rsa.GetPrivateKey();
+
+Console.WriteLine($"Открытый ключ: (e = {publicKey.e}, n = {publicKey.n})");
+Console.WriteLine($"Закрытый ключ: (d = {privateKey.d}, n = {privateKey.n})");
 
 Console.Write("Введите строку для шифрования: ");
 string input = Console.ReadLine();
