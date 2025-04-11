@@ -17,7 +17,6 @@ namespace EncryptionLibrary
             }
         }
     }
-
     public class RSA
     {
         private PrivateKey privateKey;
@@ -27,7 +26,6 @@ namespace EncryptionLibrary
         {
             GenerateKeys(salt);
         }
-
         public RSA(PublicKey publicKey, PrivateKey privateKey)
         {
             this.publicKey = publicKey;
@@ -61,8 +59,6 @@ namespace EncryptionLibrary
 
         public PublicKey GetPublicKey() => publicKey;
         public void SetPublicKey(PublicKey publicKey) => this.publicKey = publicKey;
-
-
 
         public void GenerateKeys(int salt = 100)
         {
